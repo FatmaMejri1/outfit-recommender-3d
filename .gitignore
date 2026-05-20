@@ -1,0 +1,21 @@
+﻿# Node dependencies
+backend/node_modules/
+
+# Python caches
+__pycache__/
+**/__pycache__/
+*.py[cod]
+
+# Environment files
+*.env
+backend/.env
+
+# VS Code
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Backup nested git metadata if needed
+backend/.git-backup/

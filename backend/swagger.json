@@ -1,0 +1,653 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "3D Fashion Marketplace Backend API",
+    "version": "1.0.0",
+    "description": "API documentation for the 3D Fashion Marketplace Express Backend integrated with FastAPI AI Recommendation Service."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Local development server"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "name": { "type": "string" },
+          "email": { "type": "string" },
+          "role": { "type": "string", "enum": ["user", "admin"] },
+          "gender": { "type": "string", "enum": ["M", "F", "Other"] },
+          "height": { "type": "number" },
+          "weight": { "type": "number" },
+          "shoulder": { "type": "number" },
+          "chest": { "type": "number" },
+          "waist": { "type": "number" },
+          "hips": { "type": "number" },
+          "total_orders": { "type": "integer" },
+          "last_category": { "type": "string" },
+          "last_product_type": { "type": "string" },
+          "days_since_last_order": { "type": "integer" },
+          "referral_code": { "type": "string" },
+          "total_commission": { "type": "number" }
+        }
+      },
+      "Product": {
+        "type": "object",
+        "required": ["name", "price"],
+        "properties": {
+          "id": { "type": "integer" },
+          "name": { "type": "string" },
+          "brand": { "type": "string" },
+          "category": { "type": "string" },
+          "product_type": { "type": "string" },
+          "description": { "type": "string" },
+          "price": { "type": "number" },
+          "image_url": { "type": "string" },
+          "model_3d_url": { "type": "string" },
+          "size_chest_min": { "type": "number" },
+          "size_chest_max": { "type": "number" },
+          "size_waist_min": { "type": "number" },
+          "size_waist_max": { "type": "number" },
+          "size_hip_min": { "type": "number" },
+          "size_hip_max": { "type": "number" },
+          "stock": { "type": "integer" }
+        }
+      },
+      "Order": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "user_id": { "type": "integer" },
+          "total_amount": { "type": "number" },
+          "status": { "type": "string", "enum": ["pending", "paid", "shipped", "delivered", "returned"] },
+          "referred_by": { "type": "integer" }
+        }
+      },
+      "OrderItem": {
+        "type": "object",
+        "properties": {
+          "product_id": { "type": "integer" },
+          "quantity": { "type": "integer" },
+          "unit_price": { "type": "number" },
+          "size": { "type": "string" }
+        }
+      },
+      "Commission": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "referrer_id": { "type": "integer" },
+          "order_id": { "type": "integer" },
+          "amount": { "type": "number" },
+          "status": { "type": "string", "enum": ["pending", "paid"] }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/api/auth/register": {
+      "post": {
+        "summary": "Register a new user",
+        "tags": ["Authentication"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "email", "password", "gender"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "email": { "type": "string" },
+                  "password": { "type": "string" },
+                  "gender": { "type": "string", "enum": ["M", "F", "Other"] },
+                  "height": { "type": "number" },
+                  "weight": { "type": "number" },
+                  "shoulder": { "type": "number" },
+                  "chest": { "type": "number" },
+                  "waist": { "type": "number" },
+                  "hips": { "type": "number" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": { "type": "string" },
+                    "user": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "integer" },
+                        "name": { "type": "string" },
+                        "email": { "type": "string" },
+                        "role": { "type": "string" },
+                        "referral_code": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Email already registered" }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "summary": "User login",
+        "tags": ["Authentication"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": { "type": "string" },
+                  "password": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful login",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": { "type": "string" },
+                    "user": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "integer" },
+                        "name": { "type": "string" },
+                        "email": { "type": "string" },
+                        "role": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Invalid credentials" }
+        }
+      }
+    },
+    "/api/auth/me": {
+      "get": {
+        "summary": "Get current user profile details",
+        "tags": ["Authentication"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "User profile",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/User" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/api/auth/measurements": {
+      "put": {
+        "summary": "Update user body dimensions",
+        "tags": ["Authentication"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "height": { "type": "number" },
+                  "weight": { "type": "number" },
+                  "shoulder": { "type": "number" },
+                  "chest": { "type": "number" },
+                  "waist": { "type": "number" },
+                  "hips": { "type": "number" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Measurements updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/api/products": {
+      "get": {
+        "summary": "Get all products with filters",
+        "tags": ["Products"],
+        "parameters": [
+          { "name": "category", "in": "query", "schema": { "type": "string" }, "required": false },
+          { "name": "brand", "in": "query", "schema": { "type": "string" }, "required": false },
+          { "name": "product_type", "in": "query", "schema": { "type": "string" }, "required": false }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of products",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Product" } }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new product (Admin)",
+        "tags": ["Products"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Product" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Product created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Product" }
+              }
+            }
+          },
+          "403": { "description": "Forbidden" }
+        }
+      }
+    },
+    "/api/products/{id}": {
+      "get": {
+        "summary": "Get product details by ID",
+        "tags": ["Products"],
+        "parameters": [
+          { "name": "id", "in": "path", "schema": { "type": "integer" }, "required": true }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product details",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Product" }
+              }
+            }
+          },
+          "404": { "description": "Product not found" }
+        }
+      },
+      "put": {
+        "summary": "Update product details (Admin)",
+        "tags": ["Products"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "schema": { "type": "integer" }, "required": true }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Product" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Product updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": { "message": { "type": "string" } }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a product (Admin)",
+        "tags": ["Products"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "schema": { "type": "integer" }, "required": true }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product deleted"
+          }
+        }
+      }
+    },
+    "/api/orders": {
+      "post": {
+        "summary": "Place an order (Checkout)",
+        "tags": ["Orders"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["items"],
+                "properties": {
+                  "referral_code": { "type": "string" },
+                  "items": {
+                    "type": "array",
+                    "items": { "$ref": "#/components/schemas/OrderItem" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Order created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "order_id": { "type": "integer" },
+                    "total": { "type": "number" },
+                    "status": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/orders/mine": {
+      "get": {
+        "summary": "Get my orders list",
+        "tags": ["Orders"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "My orders list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "allOf": [
+                      { "$ref": "#/components/schemas/Order" },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "OrderItems": {
+                            "type": "array",
+                            "items": { "$ref": "#/components/schemas/OrderItem" }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/wardrobe": {
+      "get": {
+        "summary": "Get my virtual wardrobe",
+        "tags": ["Wardrobe"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Wardrobe items including product specifications",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": { "type": "integer" },
+                      "user_id": { "type": "integer" },
+                      "product_id": { "type": "integer" },
+                      "added_at": { "type": "string" },
+                      "Product": { "$ref": "#/components/schemas/Product" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/recommend": {
+      "post": {
+        "summary": "Get personalized AI recommendations",
+        "tags": ["AI Recommendations"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "search_query": { "type": "string" },
+                  "category": { "type": "string" },
+                  "product_type": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Recommended products with explainable scores",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "recommendations": {
+                      "type": "array",
+                      "items": {
+                        "allOf": [
+                          { "$ref": "#/components/schemas/Product" },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "ai_score": { "type": "number" },
+                              "ai_explanation": { "type": "string" },
+                              "return_probability": { "type": "number" },
+                              "risk_data": { "type": "object" }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/stats": {
+      "get": {
+        "summary": "Get administrative dashboard statistics",
+        "tags": ["Admin Controls"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Administrative summary stats",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "totalUsers": { "type": "integer" },
+                    "totalOrders": { "type": "integer" },
+                    "totalRevenue": { "type": "number" },
+                    "pendingCommissions": { "type": "number" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/users": {
+      "get": {
+        "summary": "List all registered users",
+        "tags": ["Admin Controls"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "User listings excluding passwords",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/User" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/orders": {
+      "get": {
+        "summary": "List all orders placed",
+        "tags": ["Admin Controls"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "List of orders sorted by date",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Order" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/orders/{id}/status": {
+      "put": {
+        "summary": "Update order status",
+        "tags": ["Admin Controls"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "schema": { "type": "integer" }, "required": true }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["status"],
+                "properties": {
+                  "status": { "type": "string", "enum": ["pending", "paid", "shipped", "delivered", "returned"] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Order status updated successfully"
+          }
+        }
+      }
+    },
+    "/api/admin/commissions": {
+      "get": {
+        "summary": "List all referral commissions logs",
+        "tags": ["Admin Controls"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "List of commissions records",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Commission" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/commissions/{id}/pay": {
+      "put": {
+        "summary": "Mark a referral commission as paid",
+        "tags": ["Admin Controls"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "schema": { "type": "integer" }, "required": true }
+        ],
+        "responses": {
+          "200": {
+            "description": "Commission paid successfully"
+          }
+        }
+      }
+    }
+  }
+}
