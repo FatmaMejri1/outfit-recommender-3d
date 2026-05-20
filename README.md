@@ -10,7 +10,7 @@ This project consists of three main layers:
 
 1. **Express Backend** (`/backend`)
    - Handles REST API, authentication, database modeling (Sequelize), order processing, and administrative statistics.
-   - Computes real-time morpho-similarity ("Body Twins") directly against the PostgreSQL database.
+   - Computes real-time morpho-similarity ("Body Twins") directly against the MySQL database.
    - Acts as a proxy to the AI microservice for recommendations.
 
 2. **FastAPI AI Service** (`/ai-service`)
@@ -38,10 +38,10 @@ This project consists of three main layers:
 ### 1. Prerequisites
 - [Node.js](https://nodejs.org/) installed
 - [Python 3.x](https://www.python.org/) installed
-- [PostgreSQL](https://www.postgresql.org/) installed and running locally.
+- [MySQL](https://www.mysql.com/) installed and running locally.
 
 ### 2. Database Setup
-Create the main database in PostgreSQL:
+Create the main database in MySQL:
 ```sql
 CREATE DATABASE fashion_marketplace;
 ```
@@ -57,16 +57,16 @@ Make sure your `.env` file in the `backend/` directory looks like this:
 ```env
 PORT=3000
 DB_HOST=localhost
-DB_USER=postgres
-DB_PASS=your_postgres_password
+DB_USER=root
+DB_PASS=your_mysql_password
 DB_NAME=fashion_marketplace
-DB_PORT=5432
+DB_PORT=3306
 JWT_SECRET=your_super_secret_key_here
 AI_SERVICE_URL=http://localhost:8002
 ```
 
 ### 4. Seed the Database
-Populate your PostgreSQL database with realistic users, products, orders, and body measurements:
+Populate your MySQL database with realistic users, products, orders, and body measurements:
 ```bash
 node seed.js
 ```
