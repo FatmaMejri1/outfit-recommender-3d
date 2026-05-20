@@ -1,0 +1,74 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-outfit: 'Outfit', sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #f8f7f5;
+  color: #111111;
+  font-family: var(--font-outfit), sans-serif;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #f8f7f5; }
+::-webkit-scrollbar-thumb { background: #111111; border-radius: 0px; }
+
+/* Utilities */
+@layer components {
+  .glass {
+    @apply bg-white border border-black/5 rounded-none shadow-sm;
+  }
+  .glass-hover {
+    @apply hover:border-black/10 transition-all duration-300;
+  }
+  .btn-primary {
+    @apply bg-black hover:bg-gray-800 text-white font-medium tracking-widest uppercase px-6 py-3 rounded-none
+           transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-ghost {
+    @apply bg-transparent hover:bg-black/5 border border-black/20 hover:border-black text-black font-medium tracking-widest uppercase px-6 py-3 rounded-none transition-all duration-200 active:scale-95;
+  }
+  .input-field {
+    @apply w-full bg-white border border-black/10 rounded-none px-4 py-3 text-black
+           placeholder-black/40 focus:outline-none focus:border-black focus:ring-1 focus:ring-black
+           transition-all duration-200;
+  }
+  .badge-3d {
+    @apply inline-flex items-center gap-1 bg-surface-600 border border-black/10
+           text-black text-xs font-semibold px-2 py-0.5 rounded-none uppercase tracking-wider;
+  }
+  .tag {
+    @apply bg-white border border-black/10 text-black/60 text-xs px-2 py-0.5 rounded-none uppercase tracking-wider;
+  }
+}
+
+/* Page fade-in */
+.page-enter {
+  animation: pageEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes pageEnter {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Glow effects removed for clean look */
+.glow-brand {
+  box-shadow: none;
+}
+.text-glow {
+  text-shadow: none;
+}
