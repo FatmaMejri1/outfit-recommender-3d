@@ -19,3 +19,6 @@ Thumbs.db
 
 # Backup nested git metadata if needed
 backend/.git-backup/
+
+# Ignore backend local repository metadata
+backend/.git/
